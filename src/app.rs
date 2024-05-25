@@ -1,3 +1,4 @@
+#![allow(clippy::needless_return)]
 
 mod chocobo;
 mod choco_ui;

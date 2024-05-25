@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 use std::cmp;
 use egui::Color32;
 
@@ -96,37 +98,37 @@ impl UniqChocoChild {
                                     match row.index() {
                                         0 => {
                                             row.col(|ui| {ui.label("Max Speed:");});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.speed.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.speed.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.0.speed.1)*100.0)));});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.speed.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.speed.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.1.speed.1)*100.0)));});
                                         }
                                         1 => {
                                             row.col(|ui| {ui.label("Acceleration:");});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.acceleration.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.acceleration.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.0.acceleration.1)*100.0)));});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.acceleration.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.acceleration.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.1.acceleration.1)*100.0)));});
                                         }
                                         2 => {
                                             row.col(|ui| {ui.label("Endurance:");});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.endurance.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.endurance.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.0.endurance.1)*100.0)));});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.endurance.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.endurance.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.1.endurance.1)*100.0)));});
                                         }
                                         3 => {
                                             row.col(|ui| {ui.label("Stamina:");});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.stamina.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.stamina.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.0.stamina.1)*100.0)));});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.stamina.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.stamina.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.1.stamina.1)*100.0)));});
                                         }
                                         4 => {
                                             row.col(|ui| {ui.label("Cunning:");});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.cunning.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.0.cunning.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.0.cunning.1)*100.0)));});
-                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.cunning.0.to_string()));});
+                                            row.col(|ui| {ui.label(format!("{}", self.pedigrees.1.cunning.0));});
                                             row.col(|ui| {ui.label(format!("{}%", ((self.pedigrees.1.cunning.1)*100.0)));});
                                         }
                                         _ => {
@@ -193,7 +195,7 @@ fn get_best_child(parent1: &Chocobo, parent2: &Chocobo) -> UniqChocoChild {
         }
     }
 
-    return UniqChocoChild {
+    UniqChocoChild {
         grade: child_grade,
         color: ChocoboColor::unknown,
         gender: Gender::unknown,
@@ -204,14 +206,14 @@ fn get_best_child(parent1: &Chocobo, parent2: &Chocobo) -> UniqChocoChild {
         star_score: perfect_count,
         avg_star_score: avg_score,
         parents: (*parent1, *parent2)
-    };
+    }
 }
 
-pub fn generate_all_best_children(parents: &Vec<Chocobo>) -> Vec<UniqChocoChild> {
+pub fn generate_all_best_children(parents: &[Chocobo]) -> Vec<UniqChocoChild> {
     let mut children = Vec::new();
     
-    let females: Vec<&Chocobo> = parents.iter().filter(|&p| (*p).gender == Gender::female).collect();
-    let males: Vec<&Chocobo> = parents.iter().filter(|&p| (*p).gender == Gender::male).collect();
+    let females: Vec<&Chocobo> = parents.iter().filter(|&p| p.gender == Gender::female).collect();
+    let males: Vec<&Chocobo> = parents.iter().filter(|&p| p.gender == Gender::male).collect();
 
     for fem in females {
         for mal in &males {
@@ -222,9 +224,9 @@ pub fn generate_all_best_children(parents: &Vec<Chocobo>) -> Vec<UniqChocoChild>
     return children;
 }
 
-pub fn generate_new_best_children(children: &mut Vec<UniqChocoChild>, previous_parents: &Vec<Chocobo>, new_parent: &Chocobo) {
-    let females: Vec<&Chocobo> = previous_parents.iter().filter(|&p| (*p).gender == Gender::female).collect();
-    let males: Vec<&Chocobo> = previous_parents.iter().filter(|&p| (*p).gender == Gender::male).collect();
+pub fn generate_new_best_children(children: &mut Vec<UniqChocoChild>, previous_parents: &[Chocobo], new_parent: &Chocobo) {
+    let females: Vec<&Chocobo> = previous_parents.iter().filter(|&p| p.gender == Gender::female).collect();
+    let males: Vec<&Chocobo> = previous_parents.iter().filter(|&p| p.gender == Gender::male).collect();
 
     if new_parent.gender == Gender::female {
         for mal in males {

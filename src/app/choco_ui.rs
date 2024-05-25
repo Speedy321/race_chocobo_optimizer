@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 use super::chocobo::{Chocobo, Gender, Pedigree, Ability, ChocoboColor};
 use super::optimizer::{UniqChocoChild, generate_all_best_children, generate_new_best_children};
 
@@ -36,7 +38,7 @@ impl AddChocoboWindow {
                     ui.horizontal(|ui| {
                         ui.label("Gender: ");
                         egui::ComboBox::from_id_source("chocobo_gender_picker")
-                            .selected_text(format!("{}", self.temp_chocobo.gender.as_str()))
+                            .selected_text(self.temp_chocobo.gender.as_str())
                             .show_ui(ui, |ui| {
                                 ui.selectable_value(&mut self.temp_chocobo.gender, Gender::female, Gender::female.as_str());
                                 ui.selectable_value(&mut self.temp_chocobo.gender, Gender::male, Gender::male.as_str());
@@ -46,7 +48,7 @@ impl AddChocoboWindow {
                     ui.horizontal(|ui| {
                         ui.label("Color: ");
                         egui::ComboBox::from_id_source("chocobo_color_picker")
-                            .selected_text(format!("{}", self.temp_chocobo.color.value().name))
+                            .selected_text(self.temp_chocobo.color.value().name)
                             .show_ui(ui, |ui| {
                                 for color in ChocoboColor::VALUES {
                                     let val = color.value();
@@ -159,7 +161,7 @@ impl AddChocoboWindow {
                         let add_btn = ui.button("Add");
                         if add_btn.clicked(){
                             pairings.chocobo_added(chocobo_list, &self.temp_chocobo);
-                            chocobo_list.push(self.temp_chocobo.clone());
+                            chocobo_list.push(self.temp_chocobo);
                         }
                         let close_btn = ui.button("Close");
                         if close_btn.clicked(){
@@ -181,7 +183,7 @@ impl PairingWindow {
         }
     }
 
-    pub fn populate_from_chocobos(&mut self, chocobos: &Vec<Chocobo>) {
+    pub fn populate_from_chocobos(&mut self, chocobos: &[Chocobo]) {
         self.children_list = generate_all_best_children(chocobos);
         self.children_list.sort_by(|a, b| {
             if a.star_score == b.star_score {
@@ -192,7 +194,7 @@ impl PairingWindow {
         });
     }
 
-    pub fn chocobo_added(&mut self, old_chocobos: &Vec<Chocobo>, new_chocobo: &Chocobo) {
+    pub fn chocobo_added(&mut self, old_chocobos: &[Chocobo], new_chocobo: &Chocobo) {
         generate_new_best_children(&mut self.children_list, old_chocobos, new_chocobo);
         self.children_list.sort_by(|a, b| {
             if a.star_score == b.star_score {

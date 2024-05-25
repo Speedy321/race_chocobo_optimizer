@@ -1,5 +1,6 @@
+#![allow(clippy::needless_return)]
+
 use egui::Color32;
-use egui_extras;
 
 #[derive(serde::Deserialize, serde::Serialize, PartialEq)]
 pub struct Color{
@@ -350,6 +351,7 @@ pub enum Ability {
     breather_3
 }
 impl Ability {
+    #[allow(dead_code)]
     fn as_str(&self) -> &'static str {
         match self {
             Ability::choco_dash_1 => "Choco Dash I",
@@ -439,6 +441,8 @@ impl Pedigree {
             cunning: 1
         }
     }
+    
+    #[allow(dead_code)]
     pub fn as_array(&self) -> [i8; 5] {
         [self.speed, self.acceleration, self.endurance, self.stamina, self.cunning]
     }
