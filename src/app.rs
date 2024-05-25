@@ -1,21 +1,118 @@
+
+mod chocobo;
+mod choco_ui;
+mod optimizer;
+
+use chocobo::{Chocobo, Gender, Pedigree, Ability, ChocoboColor};
+use choco_ui::{AddChocoboWindow, PairingWindow};
+
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
     // Example stuff:
-    label: String,
+    chocobos: Vec<Chocobo>,
 
     #[serde(skip)] // This how you opt-out of serialization of a field
-    value: f32,
+    add_chocobo_window: AddChocoboWindow,
+    #[serde(skip)] // This how you opt-out of serialization of a field
+    pairing_window: PairingWindow
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
-        Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
-            value: 2.7,
-        }
+        let mut s = Self {
+            chocobos: vec![
+                Chocobo::new(
+                    5,
+                    Gender::female, 
+                    Pedigree {
+                        speed: 1,
+                        acceleration: 2,
+                        endurance: 3,
+                        stamina: 4,
+                        cunning: 4
+                    }, 
+                    Pedigree {
+                        speed: 4,
+                        acceleration: 4,
+                        endurance: 3,
+                        stamina: 2,
+                        cunning: 1
+                    }, 
+                    Ability::choco_dash_3,
+                    10,
+                    ChocoboColor::unknown
+                ),
+                Chocobo::new(
+                    6,
+                    Gender::female, 
+                    Pedigree {
+                        speed: 1,
+                        acceleration: 2,
+                        endurance: 3,
+                        stamina: 4,
+                        cunning: 4
+                    }, 
+                    Pedigree {
+                        speed: 4,
+                        acceleration: 4,
+                        endurance: 3,
+                        stamina: 2,
+                        cunning: 1
+                    }, 
+                    Ability::choco_dash_3,
+                    10,
+                    ChocoboColor::unknown
+                ),
+                Chocobo::new(
+                    9,
+                    Gender::female, 
+                    Pedigree {
+                        speed: 1,
+                        acceleration: 2,
+                        endurance: 3,
+                        stamina: 4,
+                        cunning: 4
+                    }, 
+                    Pedigree {
+                        speed: 4,
+                        acceleration: 4,
+                        endurance: 3,
+                        stamina: 2,
+                        cunning: 1
+                    }, 
+                    Ability::choco_dash_3,
+                    10,
+                    ChocoboColor::unknown
+                ),
+                Chocobo::new(
+                    2,
+                    Gender::female, 
+                    Pedigree {
+                        speed: 1,
+                        acceleration: 2,
+                        endurance: 4,
+                        stamina: 4,
+                        cunning: 4
+                    }, 
+                    Pedigree {
+                        speed: 4,
+                        acceleration: 4,
+                        endurance: 3,
+                        stamina: 2,
+                        cunning: 1
+                    }, 
+                    Ability::choco_dash_3,
+                    10,
+                    ChocoboColor::unknown
+                )
+            ],
+            add_chocobo_window: AddChocoboWindow::new(),
+            pairing_window: PairingWindow::empty()
+        };
+        s.pairing_window.populate_from_chocobos(&s.chocobos);
+        return s;
     }
 }
 
@@ -27,11 +124,16 @@ impl TemplateApp {
 
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
+        let mut s: Self;
+
         if let Some(storage) = cc.storage {
-            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+            s = eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+        } else {
+            s = Default::default();
         }
 
-        Default::default()
+        s.pairing_window.populate_from_chocobos(&s.chocobos);
+        return s;
     }
 }
 
@@ -45,6 +147,7 @@ impl eframe::App for TemplateApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
         // For inspiration and more examples, go to https://emilk.github.io/egui
+        let mut to_delete: Vec<usize> = Vec::new();
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
@@ -64,33 +167,62 @@ impl eframe::App for TemplateApp {
                 egui::widgets::global_dark_light_mode_buttons(ui);
             });
         });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("eframe template");
-
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
-            });
-
-            ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                self.value += 1.0;
-            }
-
-            ui.separator();
-
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/main/",
-                "Source code."
-            ));
-
+        egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+                ui.label("© 2024 Web App by Erdna. This project has no affiliation with Square Enix or anyone on the Final Fantasy XIV Team.");
                 powered_by_egui_and_eframe(ui);
                 egui::warn_if_debug_build(ui);
             });
         });
+        egui::SidePanel::left("left_panel")
+            .resizable(false)
+            .exact_width(450.0)
+            .show(ctx, |ui| {
+                ui.heading("Chocobo Stables");
+                
+                let add_chocobo = ui.button("Add Chocobo");
+                if add_chocobo.clicked() {
+                    self.add_chocobo_window.open = true;
+                };
+ 
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    for j in 0..(self.chocobos.len()/3 + 1){
+                        ui.horizontal(|ui| {
+                            for i in 0..3 {
+                                let idx: usize = (j*3) + i;
+                                if idx < self.chocobos.len(){
+                                    ui.push_id(idx, |ui| {
+                                        let delete = self.chocobos[idx].ui(ui, true);
+                                        if delete {
+                                            to_delete.push(idx);
+                                        };
+                                    });    
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // The central panel the region left after adding TopPanel's and SidePanel's
+            ui.heading("Best possible children: ");
+            
+            egui::ScrollArea::vertical()
+                .auto_shrink(egui::Vec2b {x: false, y: false})
+                .show(ui, |ui| {
+                    self.pairing_window.ui(ui, 20);
+            });
+        });
+
+        if self.add_chocobo_window.open {
+            self.add_chocobo_window.ui(ctx, &mut self.chocobos, &mut self.pairing_window);
+        }
+
+        for i in to_delete {
+            self.pairing_window.chocobo_removed(&self.chocobos[i]);
+            self.chocobos.remove(i);
+        }
     }
 }
 
