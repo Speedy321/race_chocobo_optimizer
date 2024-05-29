@@ -157,7 +157,11 @@ fn get_best_stat(stat1: i8, stat2: i8) -> (i8, f32){
     return (stat, chance);
 }
 
-fn get_best_child(parent1: &Chocobo, parent2: &Chocobo) -> UniqChocoChild {
+fn get_best_child(parent1: &Chocobo, parent2: &Chocobo) -> Option<UniqChocoChild> {
+    if parent1.is_covering && parent2.is_covering {
+        return None;
+    }
+
     let child_grade = cmp::min(parent1.grade, parent2.grade) + 1;
     
     let pedi1: FuturePedigree = FuturePedigree {
@@ -195,18 +199,20 @@ fn get_best_child(parent1: &Chocobo, parent2: &Chocobo) -> UniqChocoChild {
         }
     }
 
-    UniqChocoChild {
-        grade: child_grade,
-        color: ChocoboColor::unknown,
-        gender: Gender::unknown,
-        breeding_left: 10,
-        pedigrees: (pedi1, pedi2),
-        ability: parent1.ability,
-        chance: child_chance,
-        star_score: perfect_count,
-        avg_star_score: avg_score,
-        parents: (*parent1, *parent2)
-    }
+    Some(
+        UniqChocoChild {
+            grade: child_grade,
+            color: ChocoboColor::unknown,
+            gender: Gender::unknown,
+            breeding_left: 10,
+            pedigrees: (pedi1, pedi2),
+            ability: parent1.ability,
+            chance: child_chance,
+            star_score: perfect_count,
+            avg_star_score: avg_score,
+            parents: (*parent1, *parent2)
+        }
+    )
 }
 
 pub fn generate_all_best_children(parents: &[Chocobo]) -> Vec<UniqChocoChild> {
@@ -217,7 +223,10 @@ pub fn generate_all_best_children(parents: &[Chocobo]) -> Vec<UniqChocoChild> {
 
     for fem in females {
         for mal in &males {
-            children.push(get_best_child(fem, mal));
+            match get_best_child(fem, mal) {
+                Some(child) => children.push(child),
+                None => continue,
+            }
         }
     }
 
@@ -230,11 +239,17 @@ pub fn generate_new_best_children(children: &mut Vec<UniqChocoChild>, previous_p
 
     if new_parent.gender == Gender::female {
         for mal in males {
-            children.push(get_best_child(new_parent, mal));
+            match get_best_child(new_parent, mal) {
+                Some(child) => children.push(child),
+                None => continue,
+            }
         }
     } else if new_parent.gender == Gender::male {
         for fem in females {
-            children.push(get_best_child(fem, new_parent));
+            match get_best_child(fem, new_parent) {
+                Some(child) => children.push(child),
+                None => continue,
+            }
         }
     }
 }

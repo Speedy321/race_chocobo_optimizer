@@ -19,7 +19,8 @@ impl AddChocoboWindow {
                 Pedigree::new(), 
                 Ability::choco_dash_1,
                 10,
-                ChocoboColor::unknown
+                ChocoboColor::unknown,
+                false
             )
         }
     }
@@ -153,10 +154,16 @@ impl AddChocoboWindow {
                         });
                     ui.horizontal(|ui| {
                         ui.label("Breedings Left: ");
-                        ui.add(egui::DragValue::new(&mut self.temp_chocobo.breeding_left)
-                            .clamp_range(0..=10)
-                        );
+                        if self.temp_chocobo.is_covering {
+                            ui.label("1");
+                            self.temp_chocobo.breeding_left = 1;
+                        } else {
+                            ui.add(egui::DragValue::new(&mut self.temp_chocobo.breeding_left)
+                                .clamp_range(0..=10)
+                            );
+                        }
                     });
+                    ui.checkbox(&mut self.temp_chocobo.is_covering, "Covering Permit?");
                     ui.horizontal(|ui| {
                         let add_btn = ui.button("Add");
                         if add_btn.clicked(){

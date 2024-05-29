@@ -474,8 +474,8 @@ pub struct Chocobo {
 
     pub parents: (Pedigree, Pedigree),
 
-    pub ability: Ability
-
+    pub ability: Ability,
+    pub is_covering: bool
     //prefered_weather: String = "TODO"
 }
 
@@ -487,7 +487,8 @@ impl Chocobo {
         parent2: Pedigree,
         ability: Ability,
         breeding_left: i8,
-        color: ChocoboColor
+        color: ChocoboColor,
+        is_covering: bool
     ) -> Self {
         Chocobo {
             grade,
@@ -495,7 +496,8 @@ impl Chocobo {
             gender,
             parents: (parent1, parent2),
             ability,
-            breeding_left
+            breeding_left,
+            is_covering
         }
     }
     
@@ -515,7 +517,13 @@ impl Chocobo {
                     ui.set_height(200.0);
                     ui.horizontal(|ui| {
                         ui.vertical(|ui| {
-                            ui.label(format!("G{} {}", self.grade, self.gender.as_str()));
+                            if self.is_covering {
+                                ui.label(egui::RichText::new(format!("G{} {} <permit>", self.grade, self.gender.as_str()))
+                                    .color(egui::Color32::DARK_RED)
+                                );
+                            } else {
+                                ui.label(format!("G{} {}", self.grade, self.gender.as_str()));
+                            }
                             ui.label(egui::RichText::new(col_val.name)
                             .background_color(
                                 egui::Color32::from_rgb(col_val.r, col_val.g, col_val.b)
