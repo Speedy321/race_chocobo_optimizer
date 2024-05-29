@@ -4,7 +4,7 @@ mod chocobo;
 mod choco_ui;
 mod optimizer;
 
-use chocobo::{Chocobo, Gender, Pedigree, Ability, ChocoboColor};
+use chocobo::{Chocobo};
 use choco_ui::{AddChocoboWindow, PairingWindow};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -64,6 +64,10 @@ impl eframe::App for TemplateApp {
         // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
         // For inspiration and more examples, go to https://emilk.github.io/egui
         let mut to_delete: Vec<usize> = Vec::new();
+
+        if self.add_chocobo_window.open {
+            self.add_chocobo_window.ui(ctx, &mut self.chocobos, &mut self.pairing_window);
+        }
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
@@ -130,10 +134,6 @@ impl eframe::App for TemplateApp {
                     self.pairing_window.ui(ui, 20);
             });
         });
-
-        if self.add_chocobo_window.open {
-            self.add_chocobo_window.ui(ctx, &mut self.chocobos, &mut self.pairing_window);
-        }
 
         for i in to_delete {
             self.pairing_window.chocobo_removed(&self.chocobos[i]);
