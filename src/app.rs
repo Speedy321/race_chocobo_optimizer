@@ -128,7 +128,7 @@ impl eframe::App for TemplateApp {
             // The central panel the region left after adding TopPanel's and SidePanel's
             ui.heading("Best possible children: ");
             
-            egui::ScrollArea::vertical()
+            egui::ScrollArea::both()
                 .auto_shrink(egui::Vec2b {x: false, y: false})
                 .show(ui, |ui| {
                     self.pairing_window.ui(ui, 20);
